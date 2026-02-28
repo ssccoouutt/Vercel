@@ -1,67 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Colab App</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YouTube Downloader</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .downloads { margin-top: 30px; }
+        .download-item { background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #1976d2; }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1>My Colab + Vercel App</h1>
-    
-    <div>
-        <input 
-            type="text" 
-            id="messageInput"
-            placeholder="Enter a message" 
-            style="padding: 8px; width: 300px; margin-right: 10px;"
-        >
-        <button 
-            onclick="callColab()"
-            style="padding: 8px 16px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer;"
-        >
-            Call Colab
-        </button>
+<body>
+    <div class="container">
+        <h1>📥 YouTube Downloads from Colab</h1>
+        <p>Videos processed in Colab appear here automatically</p>
+        
+        <button onclick="checkDownloads()">🔄 Refresh List</button>
+        
+        <div id="downloads" class="downloads">
+            <p>Loading downloads...</p>
+        </div>
     </div>
 
-    <div id="response" style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 4px; display: none;"></div>
-    <div id="error" style="margin-top: 20px; padding: 15px; background: #ffebee; color: #c62828; border-radius: 4px; display: none;"></div>
-
     <script>
-        // 👇 YOUR ACTUAL COLAB URL (copied from above)
-        const COLAB_URL = "https://8490-m-s-lxnluh8biwk5-a.us-east4-2.prod.colab.dev";
-
-        async function callColab() {
-            const button = document.querySelector('button');
-            const responseDiv = document.getElementById('response');
-            const errorDiv = document.getElementById('error');
-            const input = document.getElementById('messageInput');
-
-            button.disabled = true;
-            button.textContent = 'Calling Colab...';
-            responseDiv.style.display = 'none';
-            errorDiv.style.display = 'none';
-
-            try {
-                const res = await fetch(`${COLAB_URL}/echo`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: input.value || 'Hello from Vercel!',
-                        timestamp: Date.now()
-                    })
-                });
-                
-                const data = await res.json();
-                responseDiv.textContent = JSON.stringify(data, null, 2);
-                responseDiv.style.display = 'block';
-            } catch (error) {
-                errorDiv.textContent = 'Error: ' + error.message;
-                errorDiv.style.display = 'block';
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Call Colab';
+        async function checkDownloads() {
+            const response = await fetch('/api/downloads');
+            const downloads = await response.json();
+            
+            const container = document.getElementById('downloads');
+            
+            if (downloads.length === 0) {
+                container.innerHTML = '<p>No downloads yet. Run Colab notebook first!</p>';
+                return;
             }
+            
+            container.innerHTML = '<h3>Available Downloads:</h3>' + 
+                downloads.map(d => `
+                    <div class="download-item">
+                        <strong>${d.video_info.title}</strong><br>
+                        Uploader: ${d.video_info.uploader}<br>
+                        Size: ${d.video_info.file_size_mb} MB<br>
+                        Format: ${d.video_info.format}<br>
+                        <a href="/api/download/${d.id}/file" download>
+                            <button>⬇️ Download</button>
+                        </a>
+                    </div>
+                `).join('');
         }
+        
+        // Check every 10 seconds
+        checkDownloads();
+        setInterval(checkDownloads, 10000);
     </script>
 </body>
 </html>
