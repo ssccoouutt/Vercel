@@ -2,156 +2,36 @@
 <html>
 <head>
     <title>YouTube Downloader</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background: #5a67d8;
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 5px;
-            display: none;
-        }
-        .success {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-        }
-        .error {
-            background: #fff2f0;
-            border: 1px solid #ffccc7;
-            color: #ff4d4f;
-        }
-        .download-link {
-            display: inline-block;
-            background: #52c41a;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        .download-link:hover {
-            background: #389e0d;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 YouTube Downloader</h1>
-        
-        <input 
-            type="text" 
-            id="url" 
-            placeholder="Enter YouTube URL (e.g., https://youtu.be/...)"
-        >
-        
-        <select id="format">
-            <option value="mp4">🎬 MP4 Video</option>
-            <option value="mp3">🎵 MP3 Audio</option>
-        </select>
-        
-        <button onclick="downloadVideo()" id="downloadBtn">
-            ⬇️ Download
-        </button>
-        
-        <div id="result"></div>
-    </div>
+    <h1>YouTube Downloader</h1>
+    <input id="url" placeholder="Enter YouTube URL">
+    <button onclick="downloadVideo()">Download</button>
+    
+    <div id="videos"></div>
 
     <script>
         async function downloadVideo() {
-            const url = document.getElementById('url').value.trim();
-            const format = document.getElementById('format').value;
-            const btn = document.getElementById('downloadBtn');
-            const result = document.getElementById('result');
+            const url = document.getElementById('url').value;
             
-            if (!url) {
-                alert('Please enter a YouTube URL');
-                return;
-            }
+            // Tell Colab to start downloading (via Vercel)
+            await fetch('/api/download', {
+                method: 'POST',
+                body: JSON.stringify({ url })
+            });
             
-            // Show loading
-            btn.disabled = true;
-            btn.textContent = '⏳ Processing...';
-            result.style.display = 'block';
-            result.className = '';
-            result.innerHTML = '<p>⏳ Downloading video from YouTube...</p>';
-            
-            try {
-                // Call your Vercel API
-                const response = await fetch('/api/download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url, format })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Show success with download link
-                    result.className = 'success';
-                    result.innerHTML = `
-                        <h3 style="margin-top:0">✅ Download Ready!</h3>
-                        <p><strong>${data.title}</strong></p>
-                        <p>Size: ${data.filesize_mb} MB</p>
-                        <a href="${data.download_url}" class="download-link" download>
-                            ⬇️ Click to Download
-                        </a>
-                        <p style="font-size:12px; color:#666; margin-top:10px">
-                            Link expires in 1 hour
-                        </p>
-                    `;
-                } else {
-                    // Show error
-                    result.className = 'error';
-                    result.innerHTML = `<p>❌ ${data.error || 'Download failed'}</p>`;
-                }
-            } catch (error) {
-                result.className = 'error';
-                result.innerHTML = `<p>❌ Error: ${error.message}</p>`;
-            }
-            
-            // Reset button
-            btn.disabled = false;
-            btn.textContent = '⬇️ Download';
+            alert('Download started in Colab!');
         }
+        
+        // Show videos that Colab has sent
+        async function loadVideos() {
+            const res = await fetch('/api/webhook');
+            const videos = await res.json();
+            
+            // Display videos...
+        }
+        
+        setInterval(loadVideos, 5000);
     </script>
 </body>
 </html>
