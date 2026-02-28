@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .calculator {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            width: 350px;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+        
+        .display {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            text-align: right;
+            font-size: 32px;
+            font-weight: bold;
+            min-height: 70px;
+            color: #333;
+            overflow-x: auto;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        button {
+            padding: 20px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .number {
+            background: #fff;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+        
+        .operator {
+            background: #667eea;
+            color: white;
+        }
+        
+        .equals {
+            background: #28a745;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .clear {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .colab-mode {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .colab-mode button {
+            background: #764ba2;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        .colab-mode input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Simple Calculator</h2>
+        <div class="display" id="display">0</div>
+        
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="operator" onclick="appendOperator('/')">÷</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+            
+            <button class="number" onclick="appendNumber('7')">7</button>
+            <button class="number" onclick="appendNumber('8')">8</button>
+            <button class="number" onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+            
+            <button class="number" onclick="appendNumber('4')">4</button>
+            <button class="number" onclick="appendNumber('5')">5</button>
+            <button class="number" onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('(')">(</button>
+            
+            <button class="number" onclick="appendNumber('1')">1</button>
+            <button class="number" onclick="appendNumber('2')">2</button>
+            <button class="number" onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="appendOperator(')')">)</button>
+            
+            <button class="number" onclick="appendNumber('0')">0</button>
+            <button class="number" onclick="appendNumber('.')'>.</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+        
+        <div class="colab-mode">
+            <h3>Google Colab Backend</h3>
+            <input type="text" id="colabUrl" placeholder="Enter your Colab URL (e.g., https://xxx.ngrok.io)" />
+            <button onclick="calculateWithColab()">Calculate with Colab</button>
+            <div class="result" id="colabResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentInput = '';
+        
+        function appendNumber(num) {
+            currentInput += num;
+            display.textContent = currentInput;
+        }
+        
+        function appendOperator(op) {
+            currentInput += op;
+            display.textContent = currentInput;
+        }
+        
+        function clearDisplay() {
+            currentInput = '';
+            display.textContent = '0';
+            document.getElementById('colabResult').style.display = 'none';
+        }
+        
+        function calculate() {
+            try {
+                if (currentInput) {
+                    // Basic local calculation
+                    let result = eval(currentInput);
+                    display.textContent = result;
+                    currentInput = result.toString();
+                }
+            } catch (error) {
+                display.textContent = 'Error';
+                currentInput = '';
+            }
+        }
+        
+        async function calculateWithColab() {
+            const colabUrl = document.getElementById('colabUrl').value;
+            const resultDiv = document.getElementById('colabResult');
+            
+            if (!colabUrl) {
+                alert('Please enter your Colab URL');
+                return;
+            }
+            
+            if (!currentInput) {
+                alert('Please enter a calculation first');
+                return;
+            }
+            
+            try {
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = 'Calculating...';
+                resultDiv.style.background = '#fff3cd';
+                resultDiv.style.color = '#856404';
+                
+                // Send calculation to Colab backend
+                const response = await fetch(colabUrl + '/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        expression: currentInput
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = `Result from Colab: ${data.result}`;
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.color = '#155724';
+                    display.textContent = data.result;
+                    currentInput = data.result.toString();
+                } else {
+                    resultDiv.textContent = `Error: ${data.error}`;
+                    resultDiv.style.background = '#f8d7da';
+                    resultDiv.style.color = '#721c24';
+                }
+            } catch (error) {
+                resultDiv.textContent = `Error connecting to Colab: ${error.message}`;
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.color = '#721c24';
+            }
+        }
+    </script>
+</body>
+</html>
