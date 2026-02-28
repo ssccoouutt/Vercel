@@ -1,58 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>YouTube Downloader</title>
+    <title>YouTube Downloads</title>
     <style>
-        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        .downloads { margin-top: 30px; }
-        .download-item { background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        button { background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #1976d2; }
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .video { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #0070f3; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        .colab-note { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📥 YouTube Downloads from Colab</h1>
-        <p>Videos processed in Colab appear here automatically</p>
-        
-        <button onclick="checkDownloads()">🔄 Refresh List</button>
-        
-        <div id="downloads" class="downloads">
-            <p>Loading downloads...</p>
-        </div>
+    <h1>📥 YouTube Downloads from Colab</h1>
+    
+    <div class="colab-note">
+        <strong>🤖 Colab is processing videos:</strong>
+        <p id="colabStatus">Waiting for Colab to send videos...</p>
     </div>
+    
+    <button onclick="fetchVideos()">🔄 Refresh</button>
+    <div id="videos"></div>
 
     <script>
-        async function checkDownloads() {
-            const response = await fetch('/api/downloads');
-            const downloads = await response.json();
+        async function fetchVideos() {
+            const res = await fetch('/api/webhook');
+            const videos = await res.json();
             
-            const container = document.getElementById('downloads');
+            document.getElementById('colabStatus').innerHTML = 
+                `📤 ${videos.length} videos received from Colab`;
             
-            if (downloads.length === 0) {
-                container.innerHTML = '<p>No downloads yet. Run Colab notebook first!</p>';
+            const container = document.getElementById('videos');
+            if (videos.length === 0) {
+                container.innerHTML = '<p>No videos yet. Run Colab notebook first!</p>';
                 return;
             }
             
-            container.innerHTML = '<h3>Available Downloads:</h3>' + 
-                downloads.map(d => `
-                    <div class="download-item">
-                        <strong>${d.video_info.title}</strong><br>
-                        Uploader: ${d.video_info.uploader}<br>
-                        Size: ${d.video_info.file_size_mb} MB<br>
-                        Format: ${d.video_info.format}<br>
-                        <a href="/api/download/${d.id}/file" download>
-                            <button>⬇️ Download</button>
-                        </a>
-                    </div>
-                `).join('');
+            container.innerHTML = videos.map(v => `
+                <div class="video">
+                    <strong>${v.video_info?.title || 'Video'}</strong><br>
+                    Size: ${v.video_info?.file_size_mb || '?'} MB<br>
+                    <a href="/api/webhook?id=${v.id}&download=true">
+                        <button>⬇️ Download</button>
+                    </a>
+                </div>
+            `).join('');
         }
         
-        // Check every 10 seconds
-        checkDownloads();
-        setInterval(checkDownloads, 10000);
+        fetchVideos();
+        setInterval(fetchVideos, 5000);
     </script>
 </body>
 </html>
