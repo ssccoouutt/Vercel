@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Calculator</title>
+    <title>YouTube Video Downloader</title>
     <style>
         * {
             margin: 0;
@@ -13,242 +13,534 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
         }
         
-        .calculator {
+        .container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
-            width: 350px;
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
         }
         
-        h2 {
+        h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 25px;
-            font-size: 28px;
-        }
-        
-        .display {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            text-align: right;
+            margin-bottom: 10px;
             font-size: 32px;
-            font-weight: bold;
-            min-height: 70px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .youtube-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .youtube-logo svg {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
             color: #333;
-            overflow-x: auto;
-        }
-        
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        
-        button {
-            padding: 20px;
-            font-size: 20px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
             font-weight: 600;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .number {
-            background: #fff;
-            color: #333;
-            border: 2px solid #e9ecef;
-        }
-        
-        .operator {
-            background: #667eea;
-            color: white;
-        }
-        
-        .equals {
-            background: #28a745;
-            color: white;
-            grid-column: span 2;
-        }
-        
-        .clear {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .colab-mode {
-            margin-top: 20px;
+        input[type="text"] {
+            width: 100%;
             padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .colab-mode button {
-            background: #764ba2;
-            color: white;
-            padding: 12px 20px;
-            font-size: 16px;
-            width: 100%;
-        }
-        
-        .colab-mode input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
             border: 2px solid #e9ecef;
-            border-radius: 5px;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ff0000;
+        }
+        
+        .format-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .format-option {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .format-option:hover {
+            border-color: #ff0000;
+            background: #fff5f5;
+        }
+        
+        .format-option.selected {
+            border-color: #ff0000;
+            background: #fff5f5;
+        }
+        
+        .format-option h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .format-option p {
+            color: #666;
             font-size: 14px;
         }
         
-        .result {
-            margin-top: 15px;
-            padding: 10px;
+        .quality-selector {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #ff0000;
+        }
+        
+        .download-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .download-btn:hover:not(:disabled) {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,0,0,0.3);
+        }
+        
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .video-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .video-info.show {
+            display: block;
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .video-meta {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress-container.show {
+            display: block;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #ff0000;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+        }
+        
+        .colab-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #ff0000;
+        }
+        
+        .colab-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .colab-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .colab-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .colab-input button {
+            padding: 12px 20px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .colab-input button:hover {
+            background: #cc0000;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .status.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.success {
+            display: block;
             background: #d4edda;
             color: #155724;
+        }
+        
+        .status.info {
+            display: block;
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .download-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
             border-radius: 5px;
-            display: none;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="calculator">
-        <h2>Simple Calculator</h2>
-        <div class="display" id="display">0</div>
-        
-        <div class="buttons">
-            <button class="clear" onclick="clearDisplay()">C</button>
-            <button class="operator" onclick="appendOperator('/')">÷</button>
-            <button class="operator" onclick="appendOperator('*')">×</button>
-            <button class="operator" onclick="appendOperator('-')">-</button>
-            
-            <button class="number" onclick="appendNumber('7')">7</button>
-            <button class="number" onclick="appendNumber('8')">8</button>
-            <button class="number" onclick="appendNumber('9')">9</button>
-            <button class="operator" onclick="appendOperator('+')">+</button>
-            
-            <button class="number" onclick="appendNumber('4')">4</button>
-            <button class="number" onclick="appendNumber('5')">5</button>
-            <button class="number" onclick="appendNumber('6')">6</button>
-            <button class="operator" onclick="appendOperator('(')">(</button>
-            
-            <button class="number" onclick="appendNumber('1')">1</button>
-            <button class="number" onclick="appendNumber('2')">2</button>
-            <button class="number" onclick="appendNumber('3')">3</button>
-            <button class="operator" onclick="appendOperator(')')">)</button>
-            
-            <button class="number" onclick="appendNumber('0')">0</button>
-            <button class="number" onclick="appendNumber('.')'>.</button>
-            <button class="equals" onclick="calculate()">=</button>
+    <div class="container">
+        <div class="youtube-logo">
+            <svg viewBox="0 0 24 24" fill="#ff0000">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
         </div>
         
-        <div class="colab-mode">
-            <h3>Google Colab Backend</h3>
-            <input type="text" id="colabUrl" placeholder="Enter your Colab URL (e.g., https://xxx.ngrok.io)" />
-            <button onclick="calculateWithColab()">Calculate with Colab</button>
-            <div class="result" id="colabResult"></div>
+        <h1>YouTube Video Downloader</h1>
+        <p class="subtitle">Download any YouTube video with Google Colab backend</p>
+        
+        <div class="input-group">
+            <label>📹 YouTube Video URL</label>
+            <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." />
+        </div>
+        
+        <div class="format-selector">
+            <div class="format-option selected" onclick="selectFormat('video')" id="formatVideo">
+                <h3>🎬 Video</h3>
+                <p>MP4 format with audio</p>
+            </div>
+            <div class="format-option" onclick="selectFormat('audio')" id="formatAudio">
+                <h3>🎵 Audio Only</h3>
+                <p>MP3 format</p>
+            </div>
+        </div>
+        
+        <div class="quality-selector" id="qualitySelector">
+            <label>⚙️ Quality</label>
+            <select id="quality">
+                <option value="highest">Highest Quality</option>
+                <option value="1080p">1080p (Full HD)</option>
+                <option value="720p">720p (HD)</option>
+                <option value="480p">480p (SD)</option>
+                <option value="360p">360p</option>
+            </select>
+        </div>
+        
+        <button class="download-btn" onclick="fetchVideoInfo()" id="fetchBtn">🔍 Fetch Video Info</button>
+        
+        <div class="video-info" id="videoInfo">
+            <img class="video-thumbnail" id="thumbnail" src="" alt="Video thumbnail">
+            <div class="video-title" id="videoTitle"></div>
+            <div class="video-meta">
+                <span id="videoDuration"></span>
+                <span id="videoAuthor"></span>
+                <span id="videoViews"></span>
+            </div>
+        </div>
+        
+        <button class="download-btn" onclick="downloadVideo()" id="downloadBtn" disabled>⬇️ Download</button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Processing...</div>
+        </div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="colab-section">
+            <h3>🔌 Google Colab Backend Connection</h3>
+            <div class="colab-input">
+                <input type="text" id="colabUrl" placeholder="Enter your Colab URL (e.g., https://xxxx.ngrok.io)" />
+                <button onclick="testColabConnection()">Test</button>
+            </div>
+            <p style="color: #666; font-size: 13px; text-align: center;">
+                Run the Colab notebook first, then paste the ngrok URL here
+            </p>
         </div>
     </div>
 
     <script>
-        let display = document.getElementById('display');
-        let currentInput = '';
+        let selectedFormat = 'video';
+        let videoData = null;
+        let colabUrl = '';
         
-        function appendNumber(num) {
-            currentInput += num;
-            display.textContent = currentInput;
-        }
-        
-        function appendOperator(op) {
-            currentInput += op;
-            display.textContent = currentInput;
-        }
-        
-        function clearDisplay() {
-            currentInput = '';
-            display.textContent = '0';
-            document.getElementById('colabResult').style.display = 'none';
-        }
-        
-        function calculate() {
-            try {
-                if (currentInput) {
-                    // Basic local calculation
-                    let result = eval(currentInput);
-                    display.textContent = result;
-                    currentInput = result.toString();
-                }
-            } catch (error) {
-                display.textContent = 'Error';
-                currentInput = '';
+        function selectFormat(format) {
+            selectedFormat = format;
+            document.getElementById('formatVideo').classList.remove('selected');
+            document.getElementById('formatAudio').classList.remove('selected');
+            document.getElementById(`format${format.charAt(0).toUpperCase() + format.slice(1)}`).classList.add('selected');
+            
+            if (format === 'audio') {
+                document.getElementById('qualitySelector').style.display = 'none';
+            } else {
+                document.getElementById('qualitySelector').style.display = 'block';
             }
         }
         
-        async function calculateWithColab() {
-            const colabUrl = document.getElementById('colabUrl').value;
-            const resultDiv = document.getElementById('colabResult');
+        async function testColabConnection() {
+            colabUrl = document.getElementById('colabUrl').value;
+            const status = document.getElementById('status');
             
             if (!colabUrl) {
-                alert('Please enter your Colab URL');
-                return;
-            }
-            
-            if (!currentInput) {
-                alert('Please enter a calculation first');
+                showStatus('Please enter Colab URL', 'error');
                 return;
             }
             
             try {
-                resultDiv.style.display = 'block';
-                resultDiv.textContent = 'Calculating...';
-                resultDiv.style.background = '#fff3cd';
-                resultDiv.style.color = '#856404';
+                showStatus('Testing connection...', 'info');
+                const response = await fetch(`${colabUrl}/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
                 
-                // Send calculation to Colab backend
-                const response = await fetch(colabUrl + '/calculate', {
+                if (response.ok) {
+                    showStatus('✅ Connected to Colab backend successfully!', 'success');
+                } else {
+                    showStatus('❌ Connection failed. Check your URL', 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchVideoInfo() {
+            const url = document.getElementById('videoUrl').value;
+            colabUrl = document.getElementById('colabUrl').value;
+            const status = document.getElementById('status');
+            
+            if (!url) {
+                showStatus('Please enter a YouTube URL', 'error');
+                return;
+            }
+            
+            if (!colabUrl) {
+                showStatus('Please enter Colab URL first', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Fetching video information...', 'info');
+                document.getElementById('fetchBtn').disabled = true;
+                document.getElementById('fetchBtn').textContent = '⏳ Fetching...';
+                
+                const response = await fetch(`${colabUrl}/info`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        expression: currentInput
-                    })
+                    body: JSON.stringify({ url: url })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    resultDiv.textContent = `Result from Colab: ${data.result}`;
-                    resultDiv.style.background = '#d4edda';
-                    resultDiv.style.color = '#155724';
-                    display.textContent = data.result;
-                    currentInput = data.result.toString();
+                    videoData = data;
+                    displayVideoInfo(data);
+                    document.getElementById('downloadBtn').disabled = false;
+                    showStatus('✅ Video information fetched successfully!', 'success');
                 } else {
-                    resultDiv.textContent = `Error: ${data.error}`;
-                    resultDiv.style.background = '#f8d7da';
-                    resultDiv.style.color = '#721c24';
+                    showStatus(`❌ Error: ${data.error}`, 'error');
                 }
             } catch (error) {
-                resultDiv.textContent = `Error connecting to Colab: ${error.message}`;
-                resultDiv.style.background = '#f8d7da';
-                resultDiv.style.color = '#721c24';
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('fetchBtn').disabled = false;
+                document.getElementById('fetchBtn').textContent = '🔍 Fetch Video Info';
             }
+        }
+        
+        function displayVideoInfo(data) {
+            const infoDiv = document.getElementById('videoInfo');
+            infoDiv.classList.add('show');
+            
+            document.getElementById('thumbnail').src = data.thumbnail;
+            document.getElementById('videoTitle').textContent = data.title;
+            document.getElementById('videoDuration').textContent = `⏱️ ${data.duration}`;
+            document.getElementById('videoAuthor').textContent = `👤 ${data.author}`;
+            document.getElementById('videoViews').textContent = `👁️ ${data.views}`;
+        }
+        
+        async function downloadVideo() {
+            if (!videoData) {
+                showStatus('Please fetch video info first', 'error');
+                return;
+            }
+            
+            const url = document.getElementById('videoUrl').value;
+            const quality = document.getElementById('quality').value;
+            
+            try {
+                showStatus('Starting download...', 'info');
+                document.getElementById('downloadBtn').disabled = true;
+                document.getElementById('progressContainer').classList.add('show');
+                
+                const response = await fetch(`${colabUrl}/download`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        format: selectedFormat,
+                        quality: quality
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+                
+                // Get the blob from response
+                const blob = await response.blob();
+                
+                // Create download link
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `${videoData.title}.${selectedFormat === 'video' ? 'mp4' : 'mp3'}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Clean up
+                window.URL.revokeObjectURL(downloadUrl);
+                
+                // Update progress
+                document.getElementById('progressFill').style.width = '100%';
+                document.getElementById('progressText').textContent = '✅ Download complete!';
+                
+                showStatus('✅ Download started! Check your downloads folder.', 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                document.getElementById('progressContainer').classList.remove('show');
+            } finally {
+                document.getElementById('downloadBtn').disabled = false;
+            }
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        // Update progress simulation (optional)
+        function updateProgress(percent) {
+            document.getElementById('progressFill').style.width = `${percent}%`;
+            document.getElementById('progressText').textContent = `Downloading... ${percent}%`;
         }
     </script>
 </body>
