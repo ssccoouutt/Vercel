@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Colab App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1>My Colab + Vercel App</h1>
+    
+    <div>
+        <input 
+            type="text" 
+            id="messageInput"
+            placeholder="Enter a message" 
+            style="padding: 8px; width: 300px; margin-right: 10px;"
+        >
+        <button 
+            onclick="callColab()"
+            style="padding: 8px 16px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer;"
+        >
+            Call Colab
+        </button>
+    </div>
+
+    <div id="response" style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 4px; display: none;"></div>
+    <div id="error" style="margin-top: 20px; padding: 15px; background: #ffebee; color: #c62828; border-radius: 4px; display: none;"></div>
+
+    <script>
+        // 👇 REPLACE THIS with your actual Colab URL
+        const COLAB_URL = "YOUR_COLAB_URL_HERE"; 
+
+        async function callColab() {
+            const button = document.querySelector('button');
+            const responseDiv = document.getElementById('response');
+            const errorDiv = document.getElementById('error');
+            const input = document.getElementById('messageInput');
+
+            // Show loading
+            button.disabled = true;
+            button.textContent = 'Calling Colab...';
+            responseDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch(`${COLAB_URL}/api/echo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: input.value || 'Hello from Vercel!' 
+                    })
+                });
+
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                
+                const data = await res.json();
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+                responseDiv.style.display = 'block';
+            } catch (error) {
+                errorDiv.textContent = 'Error: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.textContent = 'Call Colab';
+            }
+        }
+    </script>
+</body>
+</html>
