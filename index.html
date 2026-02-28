@@ -1,53 +1,15 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>YouTube Downloader</title>
-    <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
-        input, button { width: 100%; padding: 10px; margin: 10px 0; }
-        button { background: #0070f3; color: white; border: none; cursor: pointer; }
-    </style>
-</head>
 <body>
-    <h1>🎬 YouTube Downloader</h1>
-    <p>Powered by Colab (hidden behind this URL)</p>
-    
-    <input type="text" id="url" placeholder="YouTube URL">
-    <button onclick="downloadVideo()">Download</button>
+    <h1>YouTube Downloader</h1>
+    <input id="url" placeholder="URL">
+    <button onclick="fetch('/api/download',{method:'POST',body:JSON.stringify({url:this.value})})">Download</button>
     <div id="result"></div>
-
     <script>
-        async function downloadVideo() {
-            const url = document.getElementById('url').value;
-            const btn = document.querySelector('button');
-            const result = document.getElementById('result');
-            
-            btn.disabled = true;
-            btn.textContent = 'Processing...';
-            result.innerHTML = '⏳ Downloading...';
-            
-            try {
-                // This calls YOUR Vercel URL, which forwards to Colab
-                const response = await fetch('/download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    result.innerHTML = `✅ Downloaded: ${data.title}`;
-                } else {
-                    result.innerHTML = `❌ Error: ${data.error}`;
-                }
-            } catch (error) {
-                result.innerHTML = `❌ Error: ${error.message}`;
-            }
-            
-            btn.disabled = false;
-            btn.textContent = 'Download';
-        }
+        setInterval(async()=>{
+            const res=await fetch('/api/videos');
+            document.getElementById('result').innerHTML=JSON.stringify(await res.json());
+        },3000);
     </script>
 </body>
 </html>
