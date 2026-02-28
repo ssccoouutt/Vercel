@@ -3,63 +3,51 @@
 <head>
     <title>YouTube Downloader</title>
     <style>
-        body { font-family: Arial; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
         input, button { width: 100%; padding: 10px; margin: 10px 0; }
         button { background: #0070f3; color: white; border: none; cursor: pointer; }
-        .video-item { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        #loading { display: none; color: #666; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 YouTube Downloader</h1>
-        
-        <input type="text" id="url" placeholder="Enter YouTube URL">
-        <button onclick="startDownload()">Download</button>
-        
-        <div id="loading">⏳ Download started in Colab... Please wait 30-60 seconds</div>
-        
-        <h3>Available Downloads:</h3>
-        <div id="videos"></div>
-    </div>
+    <h1>🎬 YouTube Downloader</h1>
+    <p>Powered by Colab (hidden behind this URL)</p>
+    
+    <input type="text" id="url" placeholder="YouTube URL">
+    <button onclick="downloadVideo()">Download</button>
+    <div id="result"></div>
 
     <script>
-        async function startDownload() {
+        async function downloadVideo() {
             const url = document.getElementById('url').value;
-            document.getElementById('loading').style.display = 'block';
+            const btn = document.querySelector('button');
+            const result = document.getElementById('result');
             
-            // Tell Colab to start downloading
-            await fetch('/api/download', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            result.innerHTML = '⏳ Downloading...';
             
-            // Keep checking for the video
-            checkForNewVideos();
+            try {
+                // This calls YOUR Vercel URL, which forwards to Colab
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.innerHTML = `✅ Downloaded: ${data.title}`;
+                } else {
+                    result.innerHTML = `❌ Error: ${data.error}`;
+                }
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Download';
         }
-        
-        async function checkForNewVideos() {
-            const res = await fetch('/api/webhook');
-            const videos = await res.json();
-            
-            const container = document.getElementById('videos');
-            container.innerHTML = videos.map(v => `
-                <div class="video-item">
-                    <strong>${v.title}</strong><br>
-                    <a href="/api/video/${v.id}" download>
-                        <button>⬇️ Download</button>
-                    </a>
-                </div>
-            `).join('');
-            
-            document.getElementById('loading').style.display = 'none';
-        }
-        
-        // Check every 5 seconds
-        setInterval(checkForNewVideos, 5000);
-        checkForNewVideos();
     </script>
 </body>
 </html>
