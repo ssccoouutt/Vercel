@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Downloader</title>
+    <title>YouTube Downloader - API & Web Interface</title>
     <style>
         * {
             margin: 0;
@@ -14,47 +14,49 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-            width: 100%;
-            max-width: 600px;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 3px solid #ff0000;
         }
         
-        h1 {
-            text-align: center;
+        .header h1 {
             color: #333;
+            font-size: 2.5em;
             margin-bottom: 10px;
-            font-size: 32px;
         }
         
-        .subtitle {
-            text-align: center;
+        .header p {
             color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .youtube-logo {
-            text-align: center;
-            margin-bottom: 20px;
+            font-size: 1.1em;
         }
         
         .youtube-logo svg {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         label {
@@ -62,33 +64,35 @@
             margin-bottom: 8px;
             color: #333;
             font-weight: 600;
+            font-size: 1.1em;
         }
         
-        input[type="text"] {
+        input[type="text"], input[type="url"] {
             width: 100%;
             padding: 15px;
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
         
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="url"]:focus {
             outline: none;
             border-color: #ff0000;
+            box-shadow: 0 0 0 3px rgba(255,0,0,0.1);
         }
         
         .format-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .format-option {
             border: 2px solid #e9ecef;
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -97,35 +101,39 @@
         .format-option:hover {
             border-color: #ff0000;
             background: #fff5f5;
+            transform: translateY(-2px);
         }
         
         .format-option.selected {
             border-color: #ff0000;
             background: #fff5f5;
+            box-shadow: 0 5px 15px rgba(255,0,0,0.2);
         }
         
         .format-option h3 {
             color: #333;
             margin-bottom: 5px;
+            font-size: 1.2em;
         }
         
         .format-option p {
             color: #666;
-            font-size: 14px;
+            font-size: 0.9em;
         }
         
         .quality-selector {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         select {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 16px;
             background: white;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         select:focus {
@@ -133,51 +141,74 @@
             border-color: #ff0000;
         }
         
-        .download-btn {
+        .button {
             background: #ff0000;
             color: white;
             border: none;
             border-radius: 10px;
-            padding: 18px;
-            font-size: 18px;
+            padding: 15px 30px;
+            font-size: 16px;
             font-weight: 600;
-            width: 100%;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 20px;
+            width: 100%;
+            margin-bottom: 15px;
         }
         
-        .download-btn:hover:not(:disabled) {
+        .button:hover:not(:disabled) {
             background: #cc0000;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255,0,0,0.3);
         }
         
-        .download-btn:disabled {
+        .button:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none;
+        }
+        
+        .button.secondary {
+            background: #6c757d;
+        }
+        
+        .button.secondary:hover:not(:disabled) {
+            background: #5a6268;
         }
         
         .video-info {
             background: #f8f9fa;
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin: 20px 0;
             display: none;
         }
         
         .video-info.show {
             display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .video-thumbnail {
             width: 100%;
+            max-height: 300px;
+            object-fit: cover;
             border-radius: 10px;
             margin-bottom: 15px;
         }
         
         .video-title {
-            font-size: 18px;
+            font-size: 1.3em;
             font-weight: 600;
             color: #333;
             margin-bottom: 10px;
@@ -185,14 +216,15 @@
         
         .video-meta {
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
             color: #666;
-            font-size: 14px;
+            font-size: 0.9em;
             margin-bottom: 10px;
         }
         
         .progress-container {
-            margin-top: 20px;
+            margin: 20px 0;
             display: none;
         }
         
@@ -223,7 +255,7 @@
         
         .colab-section {
             margin-top: 30px;
-            padding: 20px;
+            padding: 25px;
             background: #f8f9fa;
             border-radius: 10px;
             border: 2px dashed #ff0000;
@@ -232,7 +264,9 @@
         .colab-section h3 {
             color: #333;
             margin-bottom: 15px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .colab-input {
@@ -249,133 +283,407 @@
             font-size: 14px;
         }
         
-        .colab-input button {
-            padding: 12px 20px;
-            background: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .colab-input button:hover {
-            background: #cc0000;
-        }
-        
         .status {
             padding: 15px;
             border-radius: 10px;
+            margin: 15px 0;
             display: none;
         }
         
-        .status.error {
+        .status.show {
             display: block;
+        }
+        
+        .status.error {
             background: #f8d7da;
             color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         
         .status.success {
-            display: block;
             background: #d4edda;
             color: #155724;
+            border: 1px solid #c3e6cb;
         }
         
         .status.info {
-            display: block;
             background: #d1ecf1;
             color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .api-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .api-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .api-section h4 {
+            margin: 20px 0 10px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .api-example {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .api-example code {
+            display: block;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: #ffd700;
+            word-break: break-all;
+        }
+        
+        .api-response {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
         }
         
         .download-link {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 12px 25px;
             background: #28a745;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-top: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .download-link:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab.active {
+            background: #ff0000;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            font-size: 0.9em;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px dotted white;
+        }
+        
+        .footer a:hover {
+            border-bottom: 1px solid white;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .format-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .colab-input {
+                flex-direction: column;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="youtube-logo">
-            <svg viewBox="0 0 24 24" fill="#ff0000">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
-        </div>
-        
-        <h1>YouTube Video Downloader</h1>
-        <p class="subtitle">Download any YouTube video with Google Colab backend</p>
-        
-        <div class="input-group">
-            <label>📹 YouTube Video URL</label>
-            <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." />
-        </div>
-        
-        <div class="format-selector">
-            <div class="format-option selected" onclick="selectFormat('video')" id="formatVideo">
-                <h3>🎬 Video</h3>
-                <p>MP4 format with audio</p>
+        <div class="header">
+            <div class="youtube-logo">
+                <svg viewBox="0 0 24 24" fill="#ff0000">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
             </div>
-            <div class="format-option" onclick="selectFormat('audio')" id="formatAudio">
-                <h3>🎵 Audio Only</h3>
-                <p>MP3 format</p>
-            </div>
+            <h1>🎥 YouTube Downloader</h1>
+            <p>Download videos & audio with API support</p>
         </div>
         
-        <div class="quality-selector" id="qualitySelector">
-            <label>⚙️ Quality</label>
-            <select id="quality">
-                <option value="highest">Highest Quality</option>
-                <option value="1080p">1080p (Full HD)</option>
-                <option value="720p">720p (HD)</option>
-                <option value="480p">480p (SD)</option>
-                <option value="360p">360p</option>
-            </select>
-        </div>
-        
-        <button class="download-btn" onclick="fetchVideoInfo()" id="fetchBtn">🔍 Fetch Video Info</button>
-        
-        <div class="video-info" id="videoInfo">
-            <img class="video-thumbnail" id="thumbnail" src="" alt="Video thumbnail">
-            <div class="video-title" id="videoTitle"></div>
-            <div class="video-meta">
-                <span id="videoDuration"></span>
-                <span id="videoAuthor"></span>
-                <span id="videoViews"></span>
+        <div class="main-content">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('web')">🌐 Web Interface</div>
+                <div class="tab" onclick="switchTab('api')">🔌 API Documentation</div>
             </div>
-        </div>
-        
-        <button class="download-btn" onclick="downloadVideo()" id="downloadBtn" disabled>⬇️ Download</button>
-        
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+            
+            <!-- Web Interface Tab -->
+            <div id="webTab" class="tab-content active">
+                <div class="input-group">
+                    <label>📹 YouTube Video URL</label>
+                    <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." />
+                </div>
+                
+                <div class="format-selector">
+                    <div class="format-option selected" onclick="selectFormat('video')" id="formatVideo">
+                        <h3>🎬 Video</h3>
+                        <p>MP4 format with audio</p>
+                    </div>
+                    <div class="format-option" onclick="selectFormat('audio')" id="formatAudio">
+                        <h3>🎵 Audio Only</h3>
+                        <p>MP3 format</p>
+                    </div>
+                </div>
+                
+                <div class="quality-selector" id="qualitySelector">
+                    <label>⚙️ Quality</label>
+                    <select id="quality">
+                        <option value="highest">Highest Quality</option>
+                        <option value="1080p">1080p (Full HD)</option>
+                        <option value="720p">720p (HD)</option>
+                        <option value="480p">480p (SD)</option>
+                        <option value="360p">360p</option>
+                    </select>
+                </div>
+                
+                <button class="button" onclick="fetchVideoInfo()" id="fetchBtn">🔍 Fetch Video Info</button>
+                
+                <div class="video-info" id="videoInfo">
+                    <img class="video-thumbnail" id="thumbnail" src="" alt="Video thumbnail">
+                    <div class="video-title" id="videoTitle"></div>
+                    <div class="video-meta">
+                        <span id="videoDuration"></span>
+                        <span id="videoAuthor"></span>
+                        <span id="videoViews"></span>
+                    </div>
+                </div>
+                
+                <button class="button secondary" onclick="downloadVideo()" id="downloadBtn" disabled>⬇️ Download</button>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Processing...</div>
+                </div>
+                
+                <div class="status" id="status"></div>
+                
+                <div class="colab-section">
+                    <h3>
+                        <span>🔌 Google Colab Backend</span>
+                        <span id="connectionStatus" style="font-size: 0.8em; padding: 3px 10px; border-radius: 20px; background: #ffc107; color: #000;">Not Connected</span>
+                    </h3>
+                    <div class="colab-input">
+                        <input type="url" id="colabUrl" placeholder="Enter your Colab URL (e.g., https://xxxx.ngrok-free.dev)" />
+                        <button class="button secondary" style="width: auto;" onclick="testColabConnection()">Test</button>
+                    </div>
+                    <p style="color: #666; font-size: 13px; text-align: center;">
+                        Run the Colab notebook first, then paste the ngrok URL here
+                    </p>
+                </div>
             </div>
-            <div class="progress-text" id="progressText">Processing...</div>
-        </div>
-        
-        <div class="status" id="status"></div>
-        
-        <div class="colab-section">
-            <h3>🔌 Google Colab Backend Connection</h3>
-            <div class="colab-input">
-                <input type="text" id="colabUrl" placeholder="Enter your Colab URL (e.g., https://xxxx.ngrok.io)" />
-                <button onclick="testColabConnection()">Test</button>
+            
+            <!-- API Documentation Tab -->
+            <div id="apiTab" class="tab-content">
+                <div class="api-section">
+                    <h3>📚 API Documentation</h3>
+                    <p>Use this site as an API to get video information and download links programmatically.</p>
+                    
+                    <h4>📡 Base URL</h4>
+                    <div class="api-example">
+                        <code>https://vercel-steel-pi.vercel.app</code>
+                    </div>
+                    
+                    <h4>🔍 Get Video Information</h4>
+                    <p>Returns metadata about a YouTube video without downloading.</p>
+                    <div class="api-example">
+                        <strong>Endpoint:</strong>
+                        <code>GET /?api=info&url=VIDEO_URL</code>
+                        <strong>Example:</strong>
+                        <code>https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9WgXcQ</code>
+                    </div>
+                    
+                    <h4>📥 Get Download Link</h4>
+                    <p>Returns a direct download link for the video/audio.</p>
+                    <div class="api-example">
+                        <strong>Endpoint:</strong>
+                        <code>GET /?api=download&url=VIDEO_URL&format=video&quality=720p</code>
+                        <strong>Parameters:</strong>
+                        <ul style="margin-left: 20px; color: rgba(255,255,255,0.8);">
+                            <li><code>url</code> (required) - YouTube video URL</li>
+                            <li><code>format</code> (optional) - 'video' or 'audio' (default: video)</li>
+                            <li><code>quality</code> (optional) - 'highest', '1080p', '720p', '480p', '360p' (default: 720p)</li>
+                        </ul>
+                        <strong>Example:</strong>
+                        <code>https://vercel-steel-pi.vercel.app/?api=download&url=https://youtu.be/dQw4w9WgXcQ&format=video&quality=720p</code>
+                    </div>
+                    
+                    <h4>✅ Success Response</h4>
+                    <div class="api-response">
+{
+    "success": true,
+    "title": "Rick Astley - Never Gonna Give You Up",
+    "download_url": "https://xxxx.ngrok-free.dev/download/abc123",
+    "expires_in": 3600,
+    "format": "video",
+    "quality": "720p",
+    "filesize": 15728640
+}
+                    </div>
+                    
+                    <h4>❌ Error Response</h4>
+                    <div class="api-response">
+{
+    "success": false,
+    "error": "Invalid YouTube URL or video unavailable"
+}
+                    </div>
+                    
+                    <h4>💻 Usage Examples</h4>
+                    
+                    <h5>Python</h5>
+                    <div class="api-response">
+import requests
+
+# Get video info
+response = requests.get('https://vercel-steel-pi.vercel.app/', 
+    params={'api': 'info', 'url': 'https://youtu.be/dQw4w9WgXcQ'})
+data = response.json()
+print(f"Title: {data['title']}")
+
+# Get download link
+response = requests.get('https://vercel-steel-pi.vercel.app/',
+    params={'api': 'download', 'url': 'https://youtu.be/dQw4w9WgXcQ', 
+            'format': 'video', 'quality': '720p'})
+data = response.json()
+
+# Download the video
+video = requests.get(data['download_url'])
+with open('video.mp4', 'wb') as f:
+    f.write(video.content)
+                    </div>
+                    
+                    <h5>JavaScript</h5>
+                    <div class="api-response">
+// Get download link
+fetch('https://vercel-steel-pi.vercel.app/?api=download&url=https://youtu.be/dQw4w9WgXcQ&format=video&quality=720p')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to download
+            window.location.href = data.download_url;
+        }
+    });
+                    </div>
+                    
+                    <h5>cURL</h5>
+                    <div class="api-response">
+curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9WgXcQ"
+                    </div>
+                    
+                    <h4>⚠️ Important Notes</h4>
+                    <ul style="color: rgba(255,255,255,0.8); margin-left: 20px;">
+                        <li>Requires Google Colab backend to be running</li>
+                        <li>Download links expire after 1 hour</li>
+                        <li>Rate limiting may apply</li>
+                        <li>Respect YouTube's terms of service</li>
+                    </ul>
+                </div>
             </div>
-            <p style="color: #666; font-size: 13px; text-align: center;">
-                Run the Colab notebook first, then paste the ngrok URL here
-            </p>
+            
+            <div class="footer">
+                <p>Made with ❤️ for YouTube downloading | <a href="#" onclick="switchTab('api')">API Docs</a></p>
+            </div>
         </div>
     </div>
 
     <script>
+        // State management
         let selectedFormat = 'video';
         let videoData = null;
         let colabUrl = '';
+        let isConnected = false;
         
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for API mode in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const apiMode = urlParams.get('api');
+            const videoUrl = urlParams.get('url');
+            
+            if (apiMode && videoUrl) {
+                handleApiRequest(apiMode, urlParams);
+            }
+        });
+        
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'web') {
+                document.querySelector('.tab').classList.add('active');
+                document.getElementById('webTab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('apiTab').classList.add('active');
+            }
+        }
+        
+        // Format selection
         function selectFormat(format) {
             selectedFormat = format;
             document.getElementById('formatVideo').classList.remove('selected');
@@ -389,44 +697,63 @@
             }
         }
         
+        // Test Colab connection
         async function testColabConnection() {
-            colabUrl = document.getElementById('colabUrl').value;
+            let inputUrl = document.getElementById('colabUrl').value.trim();
             const status = document.getElementById('status');
+            const connectionStatus = document.getElementById('connectionStatus');
             
-            if (!colabUrl) {
+            // Clean URL
+            inputUrl = inputUrl.replace(/\/$/, '');
+            if (!inputUrl.startsWith('http')) {
+                inputUrl = 'https://' + inputUrl;
+            }
+            
+            if (!inputUrl) {
                 showStatus('Please enter Colab URL', 'error');
                 return;
             }
             
             try {
                 showStatus('Testing connection...', 'info');
-                const response = await fetch(`${colabUrl}/health`, {
+                
+                const response = await fetch(`${inputUrl}/health`, {
                     method: 'GET',
-                    mode: 'cors'
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 if (response.ok) {
-                    showStatus('✅ Connected to Colab backend successfully!', 'success');
+                    const data = await response.json();
+                    colabUrl = inputUrl;
+                    isConnected = true;
+                    connectionStatus.textContent = 'Connected';
+                    connectionStatus.style.background = '#28a745';
+                    connectionStatus.style.color = 'white';
+                    showStatus(`✅ Connected to Colab backend on port ${data.port || 'unknown'}!`, 'success');
                 } else {
-                    showStatus('❌ Connection failed. Check your URL', 'error');
+                    throw new Error('Connection failed');
                 }
             } catch (error) {
-                showStatus(`❌ Error: ${error.message}`, 'error');
+                isConnected = false;
+                connectionStatus.textContent = 'Not Connected';
+                connectionStatus.style.background = '#ffc107';
+                connectionStatus.style.color = '#000';
+                showStatus(`❌ Cannot connect to ${inputUrl}. Make sure Colab is running.`, 'error');
             }
         }
         
+        // Fetch video info
         async function fetchVideoInfo() {
-            const url = document.getElementById('videoUrl').value;
-            colabUrl = document.getElementById('colabUrl').value;
-            const status = document.getElementById('status');
+            const url = document.getElementById('videoUrl').value.trim();
             
             if (!url) {
                 showStatus('Please enter a YouTube URL', 'error');
                 return;
             }
             
-            if (!colabUrl) {
-                showStatus('Please enter Colab URL first', 'error');
+            if (!isConnected || !colabUrl) {
+                showStatus('Please connect to Colab backend first', 'error');
                 return;
             }
             
@@ -437,9 +764,8 @@
                 
                 const response = await fetch(`${colabUrl}/info`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
                 });
                 
@@ -461,17 +787,19 @@
             }
         }
         
+        // Display video info
         function displayVideoInfo(data) {
             const infoDiv = document.getElementById('videoInfo');
             infoDiv.classList.add('show');
             
             document.getElementById('thumbnail').src = data.thumbnail;
             document.getElementById('videoTitle').textContent = data.title;
-            document.getElementById('videoDuration').textContent = `⏱️ ${data.duration}`;
-            document.getElementById('videoAuthor').textContent = `👤 ${data.author}`;
-            document.getElementById('videoViews').textContent = `👁️ ${data.views}`;
+            document.getElementById('videoDuration').innerHTML = `⏱️ ${data.duration}`;
+            document.getElementById('videoAuthor').innerHTML = `👤 ${data.author}`;
+            document.getElementById('videoViews').innerHTML = `👁️ ${data.views}`;
         }
         
+        // Download video
         async function downloadVideo() {
             if (!videoData) {
                 showStatus('Please fetch video info first', 'error');
@@ -488,9 +816,8 @@
                 
                 const response = await fetch(`${colabUrl}/download`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         url: url,
                         format: selectedFormat,
@@ -531,16 +858,64 @@
             }
         }
         
+        // Handle API requests
+        async function handleApiRequest(apiMode, params) {
+            // Hide UI for API mode
+            document.body.innerHTML = '<div style="background: #1e1e1e; color: #fff; padding: 20px; font-family: monospace;">Processing API request...</div>';
+            
+            const videoUrl = params.get('url');
+            const format = params.get('format') || 'video';
+            const quality = params.get('quality') || '720p';
+            
+            // Note: In production, you'd need to have the Colab URL configured
+            // This is a placeholder - you'd need to store the Colab URL securely
+            const colabUrl = 'https://your-colab-url.ngrok-free.dev'; // Configure this
+            
+            try {
+                if (apiMode === 'info') {
+                    const response = await fetch(`${colabUrl}/info`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: videoUrl })
+                    });
+                    
+                    const data = await response.json();
+                    document.body.innerHTML = '<pre style="background: #1e1e1e; color: #fff; padding: 20px;">' + 
+                        JSON.stringify(data, null, 2) + '</pre>';
+                        
+                } else if (apiMode === 'download') {
+                    const response = await fetch(`${colabUrl}/download-link`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            url: videoUrl,
+                            format: format,
+                            quality: quality
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    document.body.innerHTML = '<pre style="background: #1e1e1e; color: #fff; padding: 20px;">' + 
+                        JSON.stringify(data, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                document.body.innerHTML = '<pre style="background: #1e1e1e; color: #ff6b6b; padding: 20px;">' + 
+                    JSON.stringify({ success: false, error: error.message }, null, 2) + '</pre>';
+            }
+        }
+        
+        // Show status message
         function showStatus(message, type) {
             const status = document.getElementById('status');
             status.textContent = message;
-            status.className = `status ${type}`;
-        }
-        
-        // Update progress simulation (optional)
-        function updateProgress(percent) {
-            document.getElementById('progressFill').style.width = `${percent}%`;
-            document.getElementById('progressText').textContent = `Downloading... ${percent}%`;
+            status.className = `status ${type} show`;
+            
+            // Auto hide after 5 seconds for success/info
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    status.classList.remove('show');
+                }, 5000);
+            }
         }
     </script>
 </body>
