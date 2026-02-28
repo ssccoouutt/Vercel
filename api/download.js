@@ -1,4 +1,4 @@
-// api/download.js
+// api/download.js - Called by website
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -7,8 +7,12 @@ export default async function handler(req, res) {
   try {
     const { url } = req.body;
     
-    // Just acknowledge receipt - Colab will handle the actual download
-    console.log('Download requested for:', url);
+    // Add to pending queue
+    const response = await fetch(`${req.headers.origin}/api/pending`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
     
     res.status(200).json({ 
       success: true, 
