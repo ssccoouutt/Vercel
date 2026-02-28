@@ -527,11 +527,11 @@
                         <span id="connectionStatus" style="font-size: 0.8em; padding: 3px 10px; border-radius: 20px; background: #ffc107; color: #000;">Not Connected</span>
                     </h3>
                     <div class="colab-input">
-                        <input type="url" id="colabUrl" placeholder="Enter your Colab URL (e.g., https://xxxx.ngrok-free.dev)" />
-                        <button class="button secondary" style="width: auto;" onclick="testColabConnection()">Test</button>
+                        <input type="url" id="colabUrl" placeholder="https://xxxx.ngrok-free.dev" value="https://tenley-teeming-stetson.ngrok-free.dev" />
+                        <button class="button secondary" style="width: auto;" onclick="testColabConnection()">Test Connection</button>
                     </div>
                     <p style="color: #666; font-size: 13px; text-align: center;">
-                        Run the Colab notebook first, then paste the ngrok URL here
+                        ✅ Your Colab URL is pre-filled. Click "Test Connection" to verify.
                     </p>
                 </div>
             </div>
@@ -576,11 +576,10 @@
 {
     "success": true,
     "title": "Rick Astley - Never Gonna Give You Up",
-    "download_url": "https://xxxx.ngrok-free.dev/download/abc123",
+    "download_url": "https://tenley-teeming-stetson.ngrok-free.dev/api/download/abc123",
     "expires_in": 3600,
     "format": "video",
-    "quality": "720p",
-    "filesize": 15728640
+    "quality": "720p"
 }
                     </div>
                     
@@ -609,11 +608,7 @@ response = requests.get('https://vercel-steel-pi.vercel.app/',
     params={'api': 'download', 'url': 'https://youtu.be/dQw4w9WgXcQ', 
             'format': 'video', 'quality': '720p'})
 data = response.json()
-
-# Download the video
-video = requests.get(data['download_url'])
-with open('video.mp4', 'wb') as f:
-    f.write(video.content)
+print(f"Download URL: {data['download_url']}")
                     </div>
                     
                     <h5>JavaScript</h5>
@@ -623,24 +618,10 @@ fetch('https://vercel-steel-pi.vercel.app/?api=download&url=https://youtu.be/dQw
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Redirect to download
-            window.location.href = data.download_url;
+            console.log('Download URL:', data.download_url);
         }
     });
                     </div>
-                    
-                    <h5>cURL</h5>
-                    <div class="api-response">
-curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9WgXcQ"
-                    </div>
-                    
-                    <h4>⚠️ Important Notes</h4>
-                    <ul style="color: rgba(255,255,255,0.8); margin-left: 20px;">
-                        <li>Requires Google Colab backend to be running</li>
-                        <li>Download links expire after 1 hour</li>
-                        <li>Rate limiting may apply</li>
-                        <li>Respect YouTube's terms of service</li>
-                    </ul>
                 </div>
             </div>
             
@@ -667,6 +648,14 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
             if (apiMode && videoUrl) {
                 handleApiRequest(apiMode, urlParams);
             }
+            
+            // Pre-fill with your Colab URL
+            document.getElementById('colabUrl').value = 'https://tenley-teeming-stetson.ngrok-free.dev';
+            
+            // Auto-test connection on page load
+            setTimeout(() => {
+                testColabConnection();
+            }, 1000);
         });
         
         // Tab switching
@@ -697,16 +686,26 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
             }
         }
         
-        // Test Colab connection
+        // Test Colab connection - FIXED VERSION
         async function testColabConnection() {
             let inputUrl = document.getElementById('colabUrl').value.trim();
             const status = document.getElementById('status');
             const connectionStatus = document.getElementById('connectionStatus');
             
-            // Clean URL
+            // Clean URL - remove trailing slash
             inputUrl = inputUrl.replace(/\/$/, '');
+            
+            // Ensure https://
             if (!inputUrl.startsWith('http')) {
                 inputUrl = 'https://' + inputUrl;
+            }
+            
+            // Extract just the base URL (remove any paths)
+            try {
+                const urlObj = new URL(inputUrl);
+                inputUrl = `${urlObj.protocol}//${urlObj.host}`;
+            } catch (e) {
+                // If URL parsing fails, use as is
             }
             
             if (!inputUrl) {
@@ -714,32 +713,81 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
                 return;
             }
             
+            // Update the input field with cleaned URL
+            document.getElementById('colabUrl').value = inputUrl;
+            
+            showStatus('Testing connection to Colab...', 'info');
+            connectionStatus.textContent = 'Testing...';
+            connectionStatus.style.background = '#ffc107';
+            connectionStatus.style.color = '#000';
+            
             try {
-                showStatus('Testing connection...', 'info');
+                console.log(`Testing connection to: ${inputUrl}/health`);
+                
+                // Set timeout for fetch
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
                 
                 const response = await fetch(`${inputUrl}/health`, {
                     method: 'GET',
                     mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 
                 if (response.ok) {
                     const data = await response.json();
                     colabUrl = inputUrl;
                     isConnected = true;
-                    connectionStatus.textContent = 'Connected';
+                    connectionStatus.textContent = '✅ Connected';
                     connectionStatus.style.background = '#28a745';
                     connectionStatus.style.color = 'white';
-                    showStatus(`✅ Connected to Colab backend on port ${data.port || 'unknown'}!`, 'success');
+                    showStatus(`✅ Successfully connected to Colab backend!`, 'success');
+                    
+                    // Test the info endpoint
+                    testInfoEndpoint();
                 } else {
-                    throw new Error('Connection failed');
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (error) {
+                console.error('Connection error:', error);
                 isConnected = false;
-                connectionStatus.textContent = 'Not Connected';
-                connectionStatus.style.background = '#ffc107';
-                connectionStatus.style.color = '#000';
-                showStatus(`❌ Cannot connect to ${inputUrl}. Make sure Colab is running.`, 'error');
+                colabUrl = '';
+                connectionStatus.textContent = '❌ Failed';
+                connectionStatus.style.background = '#dc3545';
+                connectionStatus.style.color = 'white';
+                
+                if (error.name === 'AbortError') {
+                    showStatus('❌ Connection timeout. Make sure your Colab notebook is running.', 'error');
+                } else {
+                    showStatus(`❌ Cannot connect to ${inputUrl}. Check if Colab is running.`, 'error');
+                }
+            }
+        }
+        
+        // Test info endpoint
+        async function testInfoEndpoint() {
+            try {
+                const testResponse = await fetch(`${colabUrl}/info`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ url: 'https://youtu.be/dQw4w9WgXcQ' })
+                });
+                
+                if (testResponse.ok) {
+                    console.log('✅ Info endpoint working');
+                }
+            } catch (e) {
+                console.warn('Info endpoint test failed:', e);
             }
         }
         
@@ -762,14 +810,30 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
                 document.getElementById('fetchBtn').disabled = true;
                 document.getElementById('fetchBtn').textContent = '⏳ Fetching...';
                 
+                console.log(`Fetching info from: ${colabUrl}/info`);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                
                 const response = await fetch(`${colabUrl}/info`, {
                     method: 'POST',
                     mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ url: url }),
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('Video info response:', data);
                 
                 if (data.success) {
                     videoData = data;
@@ -777,10 +841,15 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
                     document.getElementById('downloadBtn').disabled = false;
                     showStatus('✅ Video information fetched successfully!', 'success');
                 } else {
-                    showStatus(`❌ Error: ${data.error}`, 'error');
+                    showStatus(`❌ Error: ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (error) {
-                showStatus(`❌ Error: ${error.message}`, 'error');
+                console.error('Fetch error:', error);
+                if (error.name === 'AbortError') {
+                    showStatus('❌ Request timeout. The video might be too long.', 'error');
+                } else {
+                    showStatus(`❌ Error: ${error.message}`, 'error');
+                }
             } finally {
                 document.getElementById('fetchBtn').disabled = false;
                 document.getElementById('fetchBtn').textContent = '🔍 Fetch Video Info';
@@ -792,11 +861,11 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
             const infoDiv = document.getElementById('videoInfo');
             infoDiv.classList.add('show');
             
-            document.getElementById('thumbnail').src = data.thumbnail;
-            document.getElementById('videoTitle').textContent = data.title;
-            document.getElementById('videoDuration').innerHTML = `⏱️ ${data.duration}`;
-            document.getElementById('videoAuthor').innerHTML = `👤 ${data.author}`;
-            document.getElementById('videoViews').innerHTML = `👁️ ${data.views}`;
+            document.getElementById('thumbnail').src = data.thumbnail || '';
+            document.getElementById('videoTitle').textContent = data.title || 'Unknown';
+            document.getElementById('videoDuration').innerHTML = `⏱️ ${data.duration || '0:00'}`;
+            document.getElementById('videoAuthor').innerHTML = `👤 ${data.author || 'Unknown'}`;
+            document.getElementById('videoViews').innerHTML = `👁️ ${data.views || '0'}`;
         }
         
         // Download video
@@ -813,30 +882,60 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
                 showStatus('Starting download...', 'info');
                 document.getElementById('downloadBtn').disabled = true;
                 document.getElementById('progressContainer').classList.add('show');
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressText').textContent = 'Processing...';
+                
+                console.log(`Downloading from: ${colabUrl}/download`);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
                 
                 const response = await fetch(`${colabUrl}/download`, {
                     method: 'POST',
                     mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         url: url,
                         format: selectedFormat,
                         quality: quality
-                    })
+                    }),
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeoutId);
+                
                 if (!response.ok) {
-                    throw new Error('Download failed');
+                    const errorText = await response.text();
+                    throw new Error(`Download failed: ${response.status}`);
                 }
+                
+                document.getElementById('progressFill').style.width = '50%';
+                document.getElementById('progressText').textContent = 'Downloading file...';
                 
                 // Get the blob from response
                 const blob = await response.blob();
+                
+                document.getElementById('progressFill').style.width = '90%';
+                document.getElementById('progressText').textContent = 'Preparing download...';
+                
+                // Create filename
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = `${videoData.title || 'video'}.${selectedFormat === 'video' ? 'mp4' : 'mp3'}`;
+                
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (match && match[1]) {
+                        filename = match[1].replace(/['"]/g, '');
+                    }
+                }
                 
                 // Create download link
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = downloadUrl;
-                a.download = `${videoData.title}.${selectedFormat === 'video' ? 'mp4' : 'mp3'}`;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -844,14 +943,21 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
                 // Clean up
                 window.URL.revokeObjectURL(downloadUrl);
                 
-                // Update progress
                 document.getElementById('progressFill').style.width = '100%';
                 document.getElementById('progressText').textContent = '✅ Download complete!';
-                
                 showStatus('✅ Download started! Check your downloads folder.', 'success');
                 
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('show');
+                }, 3000);
+                
             } catch (error) {
-                showStatus(`❌ Error: ${error.message}`, 'error');
+                console.error('Download error:', error);
+                if (error.name === 'AbortError') {
+                    showStatus('❌ Download timeout. The file might be too large.', 'error');
+                } else {
+                    showStatus(`❌ Error: ${error.message}`, 'error');
+                }
                 document.getElementById('progressContainer').classList.remove('show');
             } finally {
                 document.getElementById('downloadBtn').disabled = false;
@@ -860,31 +966,26 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
         
         // Handle API requests
         async function handleApiRequest(apiMode, params) {
-            // Hide UI for API mode
-            document.body.innerHTML = '<div style="background: #1e1e1e; color: #fff; padding: 20px; font-family: monospace;">Processing API request...</div>';
-            
             const videoUrl = params.get('url');
             const format = params.get('format') || 'video';
             const quality = params.get('quality') || '720p';
             
-            // Note: In production, you'd need to have the Colab URL configured
-            // This is a placeholder - you'd need to store the Colab URL securely
-            const colabUrl = 'https://your-colab-url.ngrok-free.dev'; // Configure this
+            // For API mode, we need to use the Colab URL directly
+            // This assumes you have the Colab URL configured
+            const colabApiUrl = 'https://tenley-teeming-stetson.ngrok-free.dev';
+            
+            document.body.innerHTML = '<div style="background: #1e1e1e; color: #fff; padding: 20px; font-family: monospace;">Processing API request...</div>';
             
             try {
+                let response;
                 if (apiMode === 'info') {
-                    const response = await fetch(`${colabUrl}/info`, {
+                    response = await fetch(`${colabApiUrl}/info`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ url: videoUrl })
                     });
-                    
-                    const data = await response.json();
-                    document.body.innerHTML = '<pre style="background: #1e1e1e; color: #fff; padding: 20px;">' + 
-                        JSON.stringify(data, null, 2) + '</pre>';
-                        
                 } else if (apiMode === 'download') {
-                    const response = await fetch(`${colabUrl}/download-link`, {
+                    response = await fetch(`${colabApiUrl}/download-link`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -893,11 +994,12 @@ curl "https://vercel-steel-pi.vercel.app/?api=info&url=https://youtu.be/dQw4w9Wg
                             quality: quality
                         })
                     });
-                    
-                    const data = await response.json();
-                    document.body.innerHTML = '<pre style="background: #1e1e1e; color: #fff; padding: 20px;">' + 
-                        JSON.stringify(data, null, 2) + '</pre>';
                 }
+                
+                const data = await response.json();
+                document.body.innerHTML = '<pre style="background: #1e1e1e; color: #fff; padding: 20px; overflow: auto;">' + 
+                    JSON.stringify(data, null, 2) + '</pre>';
+                    
             } catch (error) {
                 document.body.innerHTML = '<pre style="background: #1e1e1e; color: #ff6b6b; padding: 20px;">' + 
                     JSON.stringify({ success: false, error: error.message }, null, 2) + '</pre>';
