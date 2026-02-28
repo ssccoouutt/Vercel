@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   // 👇 Just this one line connects them!
-  const COLAB_URL = "https://8000-m-s-2ssqfrj4cy6be-c.us-central1-1.prod.colab.dev";
+  const COLAB_URL = "https://8000-m-s-4zrgxb3ctbq2-a.asia-east1-2.prod.colab.dev/";
   
   try {
     const path = req.query.path?.join('/') || '';
