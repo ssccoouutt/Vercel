@@ -3,257 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple YouTube Downloader</title>
+    <title>YouTube Downloader API</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            background: #f5f5f5;
         }
+        
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: 0 auto;
         }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
         h1 {
-            color: #ff0000;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
             text-align: center;
             margin-bottom: 30px;
+            font-size: 1.2em;
         }
-        input, select, button {
+        
+        .api-badge {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        
+        .api-badge code {
+            background: rgba(0,0,0,0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #ffd700;
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .endpoint h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .endpoint code {
+            display: block;
+            background: #1e1e1e;
+            color: #ffd700;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        
+        .endpoint small {
+            color: #666;
+            display: block;
+            margin-top: 10px;
+        }
+        
+        .example-box {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .example-box pre {
+            color: #ffd700;
+            white-space: pre-wrap;
+        }
+        
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            background: #0056b3;
+        }
+        
+        .test-section {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        input, select {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
             border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
-            box-sizing: border-box;
         }
-        button {
-            background: #ff0000;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background: #cc0000;
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .info {
-            background: #f0f0f0;
+        
+        .response {
+            background: #1e1e1e;
+            color: #fff;
             padding: 15px;
             border-radius: 5px;
-            margin: 20px 0;
-            display: none;
-        }
-        .error {
-            color: #721c24;
-            background: #f8d7da;
-            padding: 10px;
-            border-radius: 5px;
             margin: 10px 0;
             display: none;
         }
-        .success {
-            color: #155724;
-            background: #d4edda;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            display: none;
-        }
-        .badge {
-            background: #28a745;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
+        
+        .footer {
             text-align: center;
-            margin-bottom: 20px;
+            margin-top: 30px;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎥 Simple YouTube Downloader</h1>
-        
-        <!-- Hardcoded backend status -->
-        <div class="badge">
-            ✅ Backend: https://tenley-teeming-stetson.ngrok-free.dev
+        <div class="card">
+            <h1>🎥 YouTube Downloader API</h1>
+            <p class="subtitle">Your Vercel URL is now a complete API</p>
+            
+            <div class="api-badge">
+                🔗 Base URL: <code id="baseUrl">https://vercel-steel-pi.vercel.app</code>
+                <button class="button" onclick="copyBaseUrl()">Copy</button>
+            </div>
+
+            <h2>📡 API Endpoints</h2>
+            
+            <div class="endpoint">
+                <h3>🔍 Get Video Information</h3>
+                <code>GET /api/info?url=VIDEO_URL</code>
+                <small>Returns video metadata (title, author, duration, thumbnail)</small>
+                <button class="button" onclick="testEndpoint('info')">Test with demo video</button>
+            </div>
+
+            <div class="endpoint">
+                <h3>📥 Download Video</h3>
+                <code>GET /api/download?url=VIDEO_URL&format=FORMAT&quality=QUALITY</code>
+                <small>Parameters: format=[video/audio] quality=[highest/1080p/720p/480p/360p]</small>
+                <button class="button" onclick="testEndpoint('download')">Test with demo video</button>
+            </div>
+
+            <div class="endpoint">
+                <h3>🎵 Download Audio Only</h3>
+                <code>GET /api/download?url=VIDEO_URL&format=audio</code>
+                <small>Downloads as MP3</small>
+            </div>
+
+            <h2>🔧 Test API</h2>
+            <div class="test-section">
+                <input type="text" id="testUrl" placeholder="YouTube URL" value="https://youtu.be/dQw4w9WgXcQ">
+                <select id="testFormat">
+                    <option value="info">Get Info (JSON)</option>
+                    <option value="video">Download Video</option>
+                    <option value="audio">Download Audio</option>
+                </select>
+                <select id="testQuality">
+                    <option value="highest">Highest Quality</option>
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p (Recommended)</option>
+                    <option value="480p">480p</option>
+                    <option value="360p">360p</option>
+                </select>
+                <button class="button" onclick="testApi()" style="width: 100%; background: #28a745;">Test API</button>
+                <div class="response" id="response"></div>
+            </div>
+
+            <h2>💻 Usage Examples</h2>
+            
+            <h3>Python</h3>
+            <div class="example-box">
+                <pre>
+import requests
+
+# Get video info
+BASE_URL = "https://vercel-steel-pi.vercel.app"
+response = requests.get(f"{BASE_URL}/api/info", 
+    params={"url": "https://youtu.be/dQw4w9WgXcQ"})
+data = response.json()
+print(f"Title: {data['title']}")
+
+# Download video
+response = requests.get(f"{BASE_URL}/api/download",
+    params={"url": "https://youtu.be/dQw4w9WgXcQ", 
+            "format": "video", 
+            "quality": "720p"})
+with open("video.mp4", "wb") as f:
+    f.write(response.content)
+                </pre>
+            </div>
+
+            <h3>JavaScript</h3>
+            <div class="example-box">
+                <pre>
+// Get video info
+fetch("https://vercel-steel-pi.vercel.app/api/info?url=https://youtu.be/dQw4w9WgXcQ")
+    .then(r => r.json())
+    .then(data => console.log(data));
+
+// Download video
+window.location.href = "https://vercel-steel-pi.vercel.app/api/download?url=https://youtu.be/dQw4w9WgXcQ&format=video&quality=720p";
+                </pre>
+            </div>
+
+            <h3>cURL</h3>
+            <div class="example-box">
+                <pre>
+# Get info
+curl "https://vercel-steel-pi.vercel.app/api/info?url=https://youtu.be/dQw4w9WgXcQ"
+
+# Download video
+curl -OJ "https://vercel-steel-pi.vercel.app/api/download?url=https://youtu.be/dQw4w9WgXcQ&format=video&quality=720p"
+
+# Download audio
+curl -OJ "https://vercel-steel-pi.vercel.app/api/download?url=https://youtu.be/dQw4w9WgXcQ&format=audio"
+                </pre>
+            </div>
+
+            <h2>⚠️ Important Notes</h2>
+            <ul style="margin-left: 20px; color: #666;">
+                <li>Your Colab backend must be running at: <code id="colabUrl">https://tenley-teeming-stetson.ngrok-free.dev</code></li>
+                <li>Update this URL in the JavaScript if Colab restarts</li>
+                <li>API responses are in JSON format for info requests</li>
+                <li>Download endpoints return the actual file</li>
+            </ul>
         </div>
         
-        <input type="text" id="videoUrl" placeholder="Paste YouTube URL here (e.g., https://youtu.be/...)" />
-        
-        <select id="format">
-            <option value="video">🎬 Video (MP4)</option>
-            <option value="audio">🎵 Audio Only (MP3)</option>
-        </select>
-        
-        <select id="quality">
-            <option value="highest">Highest Quality</option>
-            <option value="1080p">1080p</option>
-            <option value="720p" selected>720p (Recommended)</option>
-            <option value="480p">480p</option>
-            <option value="360p">360p</option>
-        </select>
-        
-        <button onclick="getVideoInfo()" id="fetchBtn">🔍 Get Video Info</button>
-        
-        <div class="info" id="videoInfo">
-            <img id="thumbnail" style="width: 100%; border-radius: 5px; margin-bottom: 10px;">
-            <h3 id="title"></h3>
-            <p id="details"></p>
+        <div class="footer">
+            <p>Made with ❤️ for YouTube downloading</p>
         </div>
-        
-        <button onclick="downloadVideo()" id="downloadBtn" disabled style="background: #28a745;">⬇️ Download Now</button>
-        
-        <div class="error" id="error"></div>
-        <div class="success" id="success"></div>
     </div>
 
     <script>
-        // HARDCODED BACKEND URL - Your working ngrok URL
-        const BACKEND_URL = 'https://tenley-teeming-stetson.ngrok-free.dev';
+        // CONFIGURATION - UPDATE THIS WHEN COLAB RESTARTS
+        const COLAB_BACKEND = 'https://tenley-teeming-stetson.ngrok-free.dev';
+        const VERCEL_URL = 'https://vercel-steel-pi.vercel.app';
         
-        let currentVideoData = null;
-        
-        async function getVideoInfo() {
-            const url = document.getElementById('videoUrl').value.trim();
-            
-            if (!url) {
-                showError('Please enter a YouTube URL');
-                return;
-            }
-            
-            setLoading(true);
-            
-            try {
-                const response = await fetch(`${BACKEND_URL}/info`, {
+        // This is the magic - it creates API endpoints on your Vercel URL
+        // by forwarding requests to Colab
+        window.handleApiRequest = async function(path, params) {
+            if (path === 'info') {
+                const response = await fetch(`${COLAB_BACKEND}/info`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
+                    body: JSON.stringify({ url: params.url })
                 });
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentVideoData = data;
-                    showVideoInfo(data);
-                    document.getElementById('downloadBtn').disabled = false;
-                    showSuccess('Video info fetched! Ready to download.');
-                } else {
-                    showError(data.error || 'Failed to fetch video info');
-                }
-            } catch (error) {
-                showError('Error: ' + error.message);
-            } finally {
-                setLoading(false);
-            }
-        }
-        
-        async function downloadVideo() {
-            if (!currentVideoData) {
-                showError('Please fetch video info first');
-                return;
+                return await response.json();
             }
             
-            const url = document.getElementById('videoUrl').value;
-            const format = document.getElementById('format').value;
-            const quality = document.getElementById('quality').value;
-            
-            setLoading(true);
-            document.getElementById('downloadBtn').disabled = true;
-            
-            try {
-                const response = await fetch(`${BACKEND_URL}/download`, {
+            if (path === 'download') {
+                const response = await fetch(`${COLAB_BACKEND}/download`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        url: url, 
-                        format: format, 
-                        quality: quality 
+                        url: params.url,
+                        format: params.format || 'video',
+                        quality: params.quality || '720p'
                     })
                 });
-                
-                if (!response.ok) throw new Error('Download failed');
-                
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = `${currentVideoData.title}.${format === 'video' ? 'mp4' : 'mp3'}`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(downloadUrl);
-                
-                showSuccess('Download started! Check your downloads folder.');
-            } catch (error) {
-                showError('Download error: ' + error.message);
-            } finally {
-                setLoading(false);
-                document.getElementById('downloadBtn').disabled = false;
+                return response;
             }
-        }
-        
-        function showVideoInfo(data) {
-            const infoDiv = document.getElementById('videoInfo');
-            infoDiv.style.display = 'block';
+        };
+
+        // Handle API calls via URL parameters
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const apiPath = urlParams.get('api');
+            const videoUrl = urlParams.get('url');
             
-            document.getElementById('thumbnail').src = data.thumbnail;
-            document.getElementById('title').textContent = data.title;
-            document.getElementById('details').innerHTML = `
-                👤 ${data.author}<br>
-                ⏱️ ${data.duration}<br>
-                👁️ ${data.views}
-            `;
+            if (apiPath && videoUrl) {
+                // This is an API call, return JSON or file
+                (async () => {
+                    if (apiPath === 'info') {
+                        const data = await window.handleApiRequest('info', { url: videoUrl });
+                        document.body.innerHTML = '<pre style="background: #1e1e1e; color: #fff; padding: 20px;">' + 
+                            JSON.stringify(data, null, 2) + '</pre>';
+                    } else if (apiPath === 'download') {
+                        const format = urlParams.get('format') || 'video';
+                        const quality = urlParams.get('quality') || '720p';
+                        const response = await window.handleApiRequest('download', { 
+                            url: videoUrl, 
+                            format: format,
+                            quality: quality 
+                        });
+                        
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const downloadUrl = window.URL.createObjectURL(blob);
+                            window.location.href = downloadUrl;
+                        } else {
+                            document.body.innerHTML = '<pre style="background: #1e1e1e; color: #ff6b6b; padding: 20px;">' + 
+                                JSON.stringify({ error: 'Download failed' }, null, 2) + '</pre>';
+                        }
+                    }
+                })();
+            }
+        })();
+
+        // UI Functions
+        function copyBaseUrl() {
+            navigator.clipboard.writeText(VERCEL_URL);
+            alert('Base URL copied!');
         }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
-        }
-        
-        function showSuccess(message) {
-            const successDiv = document.getElementById('success');
-            successDiv.textContent = message;
-            successDiv.style.display = 'block';
-            setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
-        }
-        
-        function setLoading(isLoading) {
-            const fetchBtn = document.getElementById('fetchBtn');
-            const downloadBtn = document.getElementById('downloadBtn');
-            
-            if (isLoading) {
-                fetchBtn.disabled = true;
-                fetchBtn.textContent = '⏳ Processing...';
+
+        async function testEndpoint(type) {
+            const testVideo = 'https://youtu.be/dQw4w9WgXcQ';
+            if (type === 'info') {
+                window.open(`${VERCEL_URL}/?api=info&url=${encodeURIComponent(testVideo)}`, '_blank');
             } else {
-                fetchBtn.disabled = false;
-                fetchBtn.textContent = '🔍 Get Video Info';
+                window.open(`${VERCEL_URL}/?api=download&url=${encodeURIComponent(testVideo)}&format=video&quality=720p`, '_blank');
             }
         }
-        
-        // Test connection on page load
-        (async function testConnection() {
+
+        async function testApi() {
+            const url = document.getElementById('testUrl').value;
+            const format = document.getElementById('testFormat').value;
+            const quality = document.getElementById('testQuality').value;
+            const responseDiv = document.getElementById('response');
+            
+            responseDiv.style.display = 'block';
+            
+            if (format === 'info') {
+                try {
+                    const data = await window.handleApiRequest('info', { url: url });
+                    responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } catch (e) {
+                    responseDiv.innerHTML = `Error: ${e.message}`;
+                }
+            } else {
+                try {
+                    const response = await window.handleApiRequest('download', { 
+                        url: url, 
+                        format: format,
+                        quality: quality 
+                    });
+                    
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `video.${format === 'audio' ? 'mp3' : 'mp4'}`;
+                        a.click();
+                        responseDiv.innerHTML = '✅ Download started!';
+                    } else {
+                        responseDiv.innerHTML = '❌ Download failed';
+                    }
+                } catch (e) {
+                    responseDiv.innerHTML = `Error: ${e.message}`;
+                }
+            }
+        }
+
+        // Check Colab connection
+        (async function checkBackend() {
             try {
-                const response = await fetch(`${BACKEND_URL}/health`);
+                const response = await fetch(`${COLAB_BACKEND}/health`);
                 if (response.ok) {
-                    console.log('✅ Backend connected!');
+                    document.getElementById('colabUrl').style.color = '#28a745';
                 }
             } catch (e) {
-                console.warn('⚠️ Backend check failed');
+                document.getElementById('colabUrl').style.color = '#dc3545';
             }
         })();
     </script>
